@@ -1,0 +1,56 @@
+import streamlit as st
+
+st.set_page_config(page_title="Sağlık ve Risk Değerlendirme Aracı", page_icon="🫀", layout="centered")
+
+st.title("🫀 Sağlık ve Risk Değerlendirme Asistanı")
+st.markdown("Gazi Üniversitesi Sağlık Bilimleri Fakültesi • Stand Etkinliği")
+st.write("Lütfen aşağıdaki bilgilerinizi girerek vücut kitle indeksinizi ve kardiyovasküler/diyabet risk durumunuzu öğrenin.")
+
+with st.form("risk_form"):
+    col1, col2 = st.columns(2)
+    with col1:
+        yas = st.number_input("Yaşınız", min_value=10, max_value=100, value=22)
+        cinsiyet = st.selectbox("Cinsiyet", ["Kadın", "Erkek"])
+        kilo = st.number_input("Vücut Ağırlığı (kg)", min_value=30.0, max_value=200.0, value=60.0)
+    with col2:
+        boy = st.number_input("Boy Uzunluğu (cm)", min_value=100.0, max_value=220.0, value=165.0)
+        bel_cevresi = st.number_input("Bel Çevresi (cm)", min_value=50.0, max_value=180.0, value=75.0)
+    
+    submitted = st.form_submit_button("Risk Durumumu Hesapla")
+
+if submitted:
+    boy_m = boy / 100.0
+    bki = kilo / (boy_m ** 2)
+    bel_boy_orani = bel_cevresi / boy
+    
+    st.divider()
+    st.subheader("📊 Değerlendirme Sonuçlarınız")
+    
+    st.metric("Vücut Kitle İndeksi (BKİ)", f"{bki:.1f} kg/m²")
+    if bki < 18.5:
+        st.info("Durum: Zayıf (Normal ağırlığa ulaşmak için beslenmenizi dengeleyebilirsiniz.)")
+    elif 18.5 <= bki < 25:
+        st.success("Durum: Normal Kilolu (Harika! Sağlıklı aralıktasınız.)")
+    elif 25 <= bki < 30:
+        st.warning("Durum: Hafif Şişman / Fazla Kilolu (Kardiyovasküler risk yönetimi için dikkat edilmeli.)")
+    else:
+        st.error("Durum: Obezite Sınıfı (Metabolik riskler artış gösterebilir, uzman desteği önerilir.)")
+        
+    st.metric("Bel / Boy Oranı", f"{bel_boy_orani:.2f}")
+    if cinsiyet == "Kadın":
+        risk_siniri = 0.50
+    else:
+        risk_siniri = 0.53
+        
+    if bel_boy_orani < risk_siniri:
+        st.success("Bel/Boy Oranı: Sağlıklı aralıkta (Merkezi obezite riski düşük).")
+    else:
+        st.error("⚠️ Bel/Boy Oranı: Riskli sınırın üzerinde! Karın bölgesi yağlanması risk faktörüdür.")
+
+    st.markdown("---")
+    st.markdown("### 💡 Uzman Tavsiyesi")
+    st.markdown("""
+    * **Beslenme:** Tabağınızın yarısını sebzelerle doldurun, posa tüketiminizi artırın.
+    * **Meyve Tüketimi:** Meyvenin yanına protein veya sağlıklı yağ ekleyerek kan şekeri dalgalanmalarını önleyebilirsiniz.
+    * **Aktivite:** Haftada en az 5 gün 30 dakika tempolu yürüyüş yapın.
+    """)
