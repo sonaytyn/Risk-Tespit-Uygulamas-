@@ -38,13 +38,19 @@ if submitted:
     else:
         st.error("BKİ Durumu: Obezite Sınıfı (Metabolik riskler artış gösterebilir, uzman desteği önerilir.)")
         
-    # 2. Bel / Boy Oranı Değerlendirmesi
-    st.metric("Bel / Boy Oranı", f"{bel_boy_orani:.2f}")
+    # 2. Bel / Boy Oranı Değerlendirmesi (Sınır değer net gösteriliyor)
     sinir_bel_boy = 0.50 if cinsiyet == "Kadın" else 0.53
-    if bel_boy_orani < sinir_bel_boy:
-        st.success("Bel/Boy Oranı: Sağlıklı aralıkta (Merkezi obezite riski düşük).")
+    st.metric("Bel / Boy Oranı", f"{bel_boy_orani:.2f}", help=f"Sağlıklı üst sınır: {sinir_bel_boy}")
+    
+    if cinsiyet == "Kadın":
+        st.write(f"ℹ️ **Değerlendirme Kriteri:** Kadınlar için güvenli üst sınır **0.50**'dir.")
     else:
-        st.error("⚠️ Bel/Boy Oranı: Riskli sınırın üzerinde! Karın bölgesi (viseral) yağlanma kardiyovasküler hastalıklar için risk faktörüdür.")
+        st.write(f"ℹ️ **Değerlendirme Kriteri:** Erkekler için güvenli üst sınır **0.53**'tür.")
+        
+    if bel_boy_orani < sinir_bel_boy:
+        st.success(f"Bel/Boy Oranı Durumu: Sağlıklı aralıkta (Sınır olan {sinir_bel_boy}'in altındasınız, merkezi obezite riski düşük).")
+    else:
+        st.error(f"⚠️ Bel/Boy Oranı Durumu: Riskli sınırın üzerinde! (Hesaplanan oran: {bel_boy_orani:.2f} | Güvenli Sınır: {sinir_bel_boy}). Karın bölgesi yağlanması kardiyovasküler hastalıklar için risk faktörüdür.")
 
     # 3. Hocanın İstediği Bel Çevresi Risk Sınıflaması
     st.markdown("---")
@@ -69,9 +75,9 @@ if submitted:
 
     # Özet Tavsiye
     st.markdown("---")
-    st.markdown("### 💡 Uzman Tavsiyesi ve Doğru Bilinen Yanlışlar")
+    st.markdown("### 💡 Uzman Tavsiyesi ve Önemli Uyarılar")
     st.markdown("""
-    * **Meyve Tüketimi:** "Diyabetliler meyve yiyemez" inancı yanlıştır. Meyvenin yanına bir protein veya sağlıklı yağ (örn: ceviz, badem, yoğurt) ekleyerek kan şekerinizin dengeli yükselmesini sağlayabilirsiniz.
-    * **Gizli Tuz:** Tuz sadece yemeğe eklediğimiz değildir; paketli gıdalarda ve atıştırmalıklarda da gizli sodyum bulunur. Etiket okumaya özen gösterin.
-    * **Aktivite:** Haftada en az 5 gün 30 dakika tempolu yürüyüş yapın.
+    * **Paketli Gıda ve Şeker Tuzağı:** İşlenmiş ve paketli gıdaların gizli şeker, yüksek yağ ve yüksek kalori içeriği obezite ve diyabet riskini artırır. Etiket okuma alışkanlığı edinin!
+    * **Gizli Tuz:** Tuz sadece yemek masasında eklediğimiz değildir; atıştırmalıklarda, krakerlerde ve hazır gıdalarda da gizli sodyum bulunur. 
+    * **Aktivite:** Haftada en az 5 gün 30 dakika tempolu yürüyüş yaparak insülin duyarlılığınızı ve kalp sağlığınızı destekleyin.
     """)
