@@ -4,7 +4,7 @@ st.set_page_config(page_title="Sağlık ve Risk Değerlendirme Aracı", page_ico
 
 st.title("🫀 Sağlık ve Risk Değerlendirme Asistanı")
 st.markdown("Gazi Üniversitesi Sağlık Bilimleri Fakültesi • Stand Etkinliği")
-st.write("Lütfen aşağıdaki bilgilerinizi girerek vücut kitle indeksinizi ve kardiyovasküler/diyabet risk durumunuzu öğrenin.")
+st.write("Lütfen bilgilerinizi girerek Vücut Kitle İndeksinizi (BKİ), Bel/Boy oranınızı ve güncel klinik risk sınıflamalarınızı öğrenin.")
 
 with st.form("risk_form"):
     col1, col2 = st.columns(2)
@@ -16,9 +16,10 @@ with st.form("risk_form"):
         boy = st.number_input("Boy Uzunluğu (cm)", min_value=100.0, max_value=220.0, value=165.0)
         bel_cevresi = st.number_input("Bel Çevresi (cm)", min_value=50.0, max_value=180.0, value=75.0)
     
-    submitted = st.form_submit_button("Risk Durumumu Hesapla")
+    submitted = st.form_submit_button("Risk Durumumu Detaylı Hesapla")
 
 if submitted:
+    # Hesaplamalar
     boy_m = boy / 100.0
     bki = kilo / (boy_m ** 2)
     bel_boy_orani = bel_cevresi / boy
@@ -26,31 +27,51 @@ if submitted:
     st.divider()
     st.subheader("📊 Değerlendirme Sonuçlarınız")
     
+    # 1. BKİ Değerlendirmesi
     st.metric("Vücut Kitle İndeksi (BKİ)", f"{bki:.1f} kg/m²")
     if bki < 18.5:
-        st.info("Durum: Zayıf (Normal ağırlığa ulaşmak için beslenmenizi dengeleyebilirsiniz.)")
+        st.info("BKİ Durumu: Zayıf (Normal ağırlığa ulaşmak için beslenmenizi dengeleyebilirsiniz.)")
     elif 18.5 <= bki < 25:
-        st.success("Durum: Normal Kilolu (Harika! Sağlıklı aralıktasınız.)")
+        st.success("BKİ Durumu: Normal Kilolu (Harika! Sağlıklı aralıktasınız.)")
     elif 25 <= bki < 30:
-        st.warning("Durum: Hafif Şişman / Fazla Kilolu (Kardiyovasküler risk yönetimi için dikkat edilmeli.)")
+        st.warning("BKİ Durumu: Hafif Şişman / Fazla Kilolu (Kardiyovasküler risk yönetimi için dikkat edilmeli.)")
     else:
-        st.error("Durum: Obezite Sınıfı (Metabolik riskler artış gösterebilir, uzman desteği önerilir.)")
+        st.error("BKİ Durumu: Obezite Sınıfı (Metabolik riskler artış gösterebilir, uzman desteği önerilir.)")
         
+    # 2. Bel / Boy Oranı Değerlendirmesi
     st.metric("Bel / Boy Oranı", f"{bel_boy_orani:.2f}")
-    if cinsiyet == "Kadın":
-        risk_siniri = 0.50
-    else:
-        risk_siniri = 0.53
-        
-    if bel_boy_orani < risk_siniri:
+    sinir_bel_boy = 0.50 if cinsiyet == "Kadın" else 0.53
+    if bel_boy_orani < sinir_bel_boy:
         st.success("Bel/Boy Oranı: Sağlıklı aralıkta (Merkezi obezite riski düşük).")
     else:
-        st.error("⚠️ Bel/Boy Oranı: Riskli sınırın üzerinde! Karın bölgesi yağlanması risk faktörüdür.")
+        st.error("⚠️ Bel/Boy Oranı: Riskli sınırın üzerinde! Karın bölgesi (viseral) yağlanma kardiyovasküler hastalıklar için risk faktörüdür.")
 
+    # 3. Hocanın İstediği Bel Çevresi Risk Sınıflaması
     st.markdown("---")
-    st.markdown("### 💡 Uzman Tavsiyesi")
+    st.subheader("📌 Bel Çevresi ve Kardiyovasküler Risk Analizi")
+    
+    if cinsiyet == "Kadın":
+        st.write(f"**Girilen Bel Çevresi:** {bel_cevresi} cm (Kadın Kriterleri)")
+        if bel_cevresi >= 88:
+            st.error("🚨 **Yüksek Risk Grubu:** Bel çevreniz 88 cm ve üzerindedir. Tip 2 Diyabet, hipertansiyon ve kardiyovasküler hastalık riski **yüksektir**.")
+        elif bel_cevresi >= 80:
+            st.warning("⚠️ **Risk Grubu:** Bel çevreniz 80 cm - 87.9 cm arasındadır. Artmış metabolik risk söz konusudur, önlem almanız önerilir.")
+        else:
+            st.success("✅ **Düşük Risk / Normal:** Bel çevreniz 80 cm'nin altındadır, sağlıklı aralıktasınız.")
+    else: # Erkek
+        st.write(f"**Girilen Bel Çevresi:** {bel_cevresi} cm (Erkek Kriterleri)")
+        if bel_cevresi >= 104:
+            st.error("🚨 **Yüksek Risk Grubu:** Bel çevreniz 104 cm ve üzerindedir. Tip 2 Diyabet, hipertansiyon ve kardiyovasküler hastalık riski **yüksektir**.")
+        elif bel_cevresi >= 92:
+            st.warning("⚠️ **Risk Grubu:** Bel çevreniz 92 cm - 103.9 cm arasındadır. Artmış metabolik risk söz konusudur, önlem almanız önerilir.")
+        else:
+            st.success("✅ **Düşük Risk / Normal:** Bel çevreniz 92 cm'nin altındadır, sağlıklı aralıktasınız.")
+
+    # Özet Tavsiye
+    st.markdown("---")
+    st.markdown("### 💡 Uzman Tavsiyesi ve Doğru Bilinen Yanlışlar")
     st.markdown("""
-    * **Beslenme:** Tabağınızın yarısını sebzelerle doldurun, posa tüketiminizi artırın.
-    * **Meyve Tüketimi:** Meyvenin yanına protein veya sağlıklı yağ ekleyerek kan şekeri dalgalanmalarını önleyebilirsiniz.
+    * **Meyve Tüketimi:** "Diyabetliler meyve yiyemez" inancı yanlıştır. Meyvenin yanına bir protein veya sağlıklı yağ (örn: ceviz, badem, yoğurt) ekleyerek kan şekerinizin dengeli yükselmesini sağlayabilirsiniz.
+    * **Gizli Tuz:** Tuz sadece yemeğe eklediğimiz değildir; paketli gıdalarda ve atıştırmalıklarda da gizli sodyum bulunur. Etiket okumaya özen gösterin.
     * **Aktivite:** Haftada en az 5 gün 30 dakika tempolu yürüyüş yapın.
     """)
